@@ -1,17 +1,20 @@
-import { Cat, Paw, Eye, Ear, MessageCircle, Facebook, Twitter, Instagram, Mail } from "lucide-react";
+import { Cat, Paw, Eye, Ear, MessageCircle, Facebook, Twitter, Instagram, Mail, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
-import { motion, useAnimation } from "framer-motion";
+import { motion, useAnimation, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const [funFact, setFunFact] = useState("Cats sleep for 70% of their lives.");
   const [factCount, setFactCount] = useState(0);
   const controls = useAnimation();
   const [ref, inView] = useInView();
+  const [likedBreeds, setLikedBreeds] = useState({});
 
   useEffect(() => {
     if (inView) {
@@ -46,6 +49,13 @@ const Index = () => {
     setFactCount(prevCount => prevCount + 1);
   };
 
+  const toggleLike = (breedName) => {
+    setLikedBreeds(prev => ({
+      ...prev,
+      [breedName]: !prev[breedName]
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100">
       <div className="relative h-screen bg-fixed bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"}}>
@@ -71,47 +81,73 @@ const Index = () => {
           Cats are fascinating creatures that have been domesticated for thousands of years. They are known for their independence, agility, and affectionate nature.
         </motion.p>
 
-        <h2 className="text-4xl font-semibold mb-8 text-center">Characteristics of Cats</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-          {characteristics.map((char, index) => (
-            <motion.div 
-              key={index}
-              whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center text-center p-6 bg-white rounded-lg shadow-lg transition-all duration-300 hover:bg-purple-100"
-            >
-              {char.icon}
-              <p className="mt-4 text-lg">{char.text}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        <h2 className="text-4xl font-semibold mb-8 text-center">Popular Cat Breeds</h2>
-        <Carousel className="mb-16">
-          <CarouselContent>
-            {catBreeds.map((breed, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-1">
-                  <Card>
-                    <CardContent className="flex aspect-square items-center justify-center p-6">
-                      <div>
-                        <img src={breed.image} alt={breed.name} className="w-full h-48 object-cover rounded-t-lg" />
-                        <h3 className="text-xl font-semibold mt-4">{breed.name}</h3>
-                        <p className="mt-2">{breed.description}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <Tabs defaultValue="characteristics" className="mb-16">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="characteristics">Characteristics</TabsTrigger>
+            <TabsTrigger value="breeds">Popular Breeds</TabsTrigger>
+          </TabsList>
+          <TabsContent value="characteristics">
+            <h2 className="text-4xl font-semibold mb-8 text-center">Characteristics of Cats</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {characteristics.map((char, index) => (
+                <motion.div 
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex flex-col items-center text-center p-6 bg-white rounded-lg shadow-lg transition-all duration-300 hover:bg-purple-100"
+                >
+                  {char.icon}
+                  <p className="mt-4 text-lg">{char.text}</p>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="breeds">
+            <h2 className="text-4xl font-semibold mb-8 text-center">Popular Cat Breeds</h2>
+            <Carousel>
+              <CarouselContent>
+                {catBreeds.map((breed, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1">
+                      <Card>
+                        <CardContent className="flex aspect-square items-center justify-center p-6">
+                          <div className="relative">
+                            <img src={breed.image} alt={breed.name} className="w-full h-48 object-cover rounded-t-lg" />
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => toggleLike(breed.name)}
+                              className="absolute top-2 right-2 bg-white rounded-full p-2"
+                            >
+                              <Heart className={`h-6 w-6 ${likedBreeds[breed.name] ? 'text-red-500 fill-red-500' : 'text-gray-500'}`} />
+                            </motion.button>
+                            <h3 className="text-xl font-semibold mt-4">{breed.name}</h3>
+                            <p className="mt-2">{breed.description}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </TabsContent>
+        </Tabs>
 
         <h2 className="text-4xl font-semibold mb-8 text-center">Cat Fun Fact</h2>
         <Card className="mb-16">
           <CardContent className="p-8">
-            <p className="text-2xl text-center mb-6">{funFact}</p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={funFact}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="text-2xl text-center mb-6"
+              >
+                {funFact}
+              </motion.p>
+            </AnimatePresence>
             <div className="flex justify-center items-center">
               <Button 
                 onClick={handleNewFact}
@@ -119,7 +155,7 @@ const Index = () => {
               >
                 New Fun Fact
               </Button>
-              <p className="ml-4 text-xl">Facts learned: {factCount}</p>
+              <Badge variant="secondary" className="ml-4 text-xl">Facts learned: {factCount}</Badge>
             </div>
           </CardContent>
         </Card>
